@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>הערכת פרופיל ההיכרויות שלי</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { heebo: ['Heebo', 'sans-serif'] },
+          animation: {
+            'slide-up':  'slideUp 0.4s cubic-bezier(0.22,1,0.36,1) both',
+            'pulse-soft':'pulseSoft 2.2s ease-in-out infinite',
+            'spin-slow': 'spin 2.8s linear infinite',
+            'float':     'float 4s ease-in-out infinite',
+          },
+          keyframes: {
+            slideUp:   { from:{opacity:'0',transform:'translateY(20px)'}, to:{opacity:'1',transform:'translateY(0)'} },
+            pulseSoft: { '0%,100%':{opacity:'1'}, '50%':{opacity:'.4'} },
+            float:     { '0%,100%':{transform:'translateY(0)'}, '50%':{transform:'translateY(-7px)'} },
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Heebo', sans-serif;
+      background: #f7f4ef;
+      color: #1a1612;
+    }
+
+    /* ── Grid bg ── */
+    .grid-bg {
+      background-color: #f7f4ef;
+      background-image:
+        linear-gradient(rgba(180,160,130,0.13) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(180,160,130,0.13) 1px, transparent 1px);
+      background-size: 52px 52px;
+    }
+
+    /* ── Progress bar ── */
+    .progress-fill { transition: width 0.5s cubic-bezier(0.22,1,0.36,1); }
+
+    /* ── Screen transition ── */
+    .screen { animation: slideUp 0.4s cubic-bezier(0.22,1,0.36,1) both; }
+
+    /* ── Cards (value prop, sections) ── */
+    .card {
+      background: #ffffff;
+      border: 1px solid #e8e2d8;
+      border-radius: 18px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.04);
+    }
+
+    /* ── Option cards ── */
+    .option-card {
+      background: #ffffff;
+      border: 1.5px solid #e3ddd3;
+      border-radius: 16px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s cubic-bezier(0.22,1,0.36,1);
+    }
+    .option-card:hover:not(.selected) {
+      border-color: rgba(166,124,0,0.45);
+      background: #fffaeb;
+      transform: scale(1.012);
+      box-shadow: 0 4px 16px rgba(166,124,0,0.12);
+    }
+    .option-card.selected {
+      border-color: #a67c00 !important;
+      background: linear-gradient(135deg, #fdf6e0 0%, #fffaf0 100%) !important;
+      transform: scale(1.016);
+      box-shadow: 0 4px 20px rgba(166,124,0,0.18);
+    }
+    .option-card.selected .option-letter {
+      background: linear-gradient(135deg, #ffde59, #e3b023);
+      color: #1a1612;
+      border-color: transparent;
+    }
+
+    /* ── Scale buttons (rating scales) ── */
+    .scale-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1.5px solid #d6d0c6;
+      background: rgba(26,22,18,0.04);
+      color: #a67c00;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s cubic-bezier(0.22,1,0.36,1);
+    }
+    .scale-btn:hover:not(.selected) {
+      border-color: rgba(166,124,0,0.45);
+      background: #fffaeb;
+      transform: scale(1.06);
+    }
+    .scale-btn.selected {
+      border-color: transparent;
+      background: linear-gradient(135deg, #ffde59, #e3b023);
+      color: #1a1612;
+      transform: scale(1.1);
+      box-shadow: 0 4px 14px rgba(166,124,0,0.28);
+    }
+
+    /* ── Inputs ── */
+    .heb-input {
+      background: #ffffff;
+      border: 1.5px solid #d6d0c6;
+      color: #1a1612;
+      border-radius: 12px;
+      padding: 13px 16px;
+      font-family: 'Heebo', sans-serif;
+      font-size: 15px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      direction: rtl;
+      text-align: right;
+    }
+    .heb-input::placeholder { color: #b0a898; }
+    .heb-input:focus {
+      border-color: #a67c00;
+      box-shadow: 0 0 0 3px rgba(166,124,0,0.14);
+    }
+    .heb-input.error { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+
+    /* ── CTA button ── */
+    .cta-btn {
+      background: linear-gradient(135deg, #ffde59 0%, #e3b023 100%);
+      color: #1a1612;
+      font-family: 'Heebo', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      padding: 15px 34px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.22,1,0.36,1);
+      box-shadow: 0 6px 24px rgba(166,124,0,0.35), 0 2px 6px rgba(166,124,0,0.18);
+      position: relative;
+      overflow: hidden;
+      letter-spacing: 0.01em;
+      display: inline-block;
+      text-decoration: none;
+    }
+    .cta-btn::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 55%);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .cta-btn:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 12px 32px rgba(166,124,0,0.42), 0 4px 10px rgba(166,124,0,0.22); }
+    .cta-btn:hover::before { opacity: 1; }
+    .cta-btn:active { transform: scale(0.99); }
+    .cta-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; box-shadow: none; }
+
+    /* ── Back button ── */
+    .back-btn {
+      background: rgba(26,22,18,0.06);
+      border: 1.5px solid rgba(26,22,18,0.1);
+      color: rgba(26,22,18,0.55);
+      font-family: 'Heebo', sans-serif;
+      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.18s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .back-btn:hover { background: rgba(26,22,18,0.1); color: #1a1612; }
+
+    /* ── Icon container ── */
+    .icon-wrap {
+      background: linear-gradient(135deg, rgba(255,222,89,0.22) 0%, rgba(227,176,35,0.10) 100%);
+      border: 1px solid rgba(227,176,35,0.3);
+      box-shadow: 0 6px 28px rgba(227,176,35,0.16), inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    /* ── Gradient text ── */
+    .gradient-text {
+      background: linear-gradient(135deg, #a67c00 0%, #e3b023 55%, #a67c00 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(26,22,18,0.12); border-radius: 4px; }
+
+    /* ── Loading dots ── */
+    .dot { animation: pulseSoft 1.4s ease-in-out infinite; }
+    .dot:nth-child(2) { animation-delay: 0.22s; }
+    .dot:nth-child(3) { animation-delay: 0.44s; }
+
+    /* ── Label secondary ── */
+    .label-main  { color: rgba(26,22,18,0.5);  font-size:14px; font-weight:600; }
+    .label-sub   { color: rgba(26,22,18,0.3);  font-size:12px; }
+    .text-body   { color: rgba(26,22,18,0.62); }
+    .text-muted  { color: rgba(26,22,18,0.35); }
+  </style>
+</head>
+<body class="min-h-screen overflow-x-hidden">
+
+  <!-- ── PROGRESS BAR ── -->
+  <div id="progressContainer" class="fixed top-0 right-0 left-0 z-50 hidden">
+    <div class="h-[3px]" style="background:#e8e2d8">
+      <div id="progressFill" class="progress-fill h-full" style="width:0%;background:linear-gradient(to left,#ffde59,#e3b023)"></div>
+    </div>
+    <div class="flex items-center justify-between px-5 py-2.5 border-b"
+         style="background:rgba(247,244,239,0.92);border-color:#e8e2d8;backdrop-filter:blur(10px)">
+      <button id="topBackBtn" class="back-btn hidden" onclick="goBack()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+             style="transform:scaleX(-1)"><polyline points="15 18 9 12 15 6"/></svg>
+        חזרה
+      </button>
+      <span class="mx-auto text-xs font-semibold text-muted">שאלה <span id="currentQ">1</span> מתוך 12</span>
+    </div>
+  </div>
+
+  <div id="app" class="min-h-screen flex items-center justify-center px-4 py-8 grid-bg"></div>
+
+  <script>
+  /* ═══ BRAND ═══ */
+  const LOGO_SRC = 'logo.png';
+
+  /* ═══ DATA ═══ */
+  const QUESTIONS = [
+    { id: 1, text: 'עד כמה אתה בעל ביטחון בפרופיל הנוכחי שלך באפליקציות היכרויות?', min: 1, max: 10, minLabel: 'ללא ביטחון בכלל', maxLabel: 'ביטחון מוחלט' },
+    { id: 2, text: 'עד כמה אתה מסכים עם ההיגד הבא: אני גאה בפרופיל הנוכחי שלי באפליקציות היכרויות', min: 1, max: 5, minLabel: 'בכלל לא מסכים', maxLabel: 'לגמרי מסכים' },
+    { id: 3, text: 'עד כמה אתה מסכים עם ההיגד הבא: השקעתי המון עבודה ביצירת פרופיל מעולה', min: 1, max: 5, minLabel: 'בכלל לא מסכים', maxLabel: 'לגמרי מסכים' },
+    { id: 4, text: 'עד כמה אתה מסכים עם ההיגד הבא: הפרופיל שלי מייצג אותי בצורה מדויקת', min: 1, max: 5, minLabel: 'בכלל לא מסכים', maxLabel: 'לגמרי מסכים' },
+    { id: 5, text: 'עד כמה אתה מסכים עם ההיגד הבא: הפרופיל שלי מתקשר בצורה ברורה את מה שאני מחפש', min: 1, max: 5, minLabel: 'בכלל לא מסכים', maxLabel: 'לגמרי מסכים' },
+    { id: 6, text: 'עד כמה אתה מסכים עם ההיגד הבא: הפרופיל שלי נותן תחושה של איך זה יהיה לצאת איתי לדייט', min: 1, max: 5, minLabel: 'בכלל לא מסכים', maxLabel: 'לגמרי מסכים' },
+    { id: 7, text: 'עד כמה אתה מסכים עם ההיגד הבא: חבר קרוב היה אומר שהפרופיל שלי מצייר תמונה מדויקת של מי שאני', min: 1, max: 5, minLabel: 'בכלל לא מסכים', maxLabel: 'לגמרי מסכים' },
+    { id: 8, text: 'עד כמה אתה מסכים עם ההיגד הבא: כל התמונות בפרופיל שלי צולמו ב-6 החודשים האחרונים ומשקפות איך שאני נראה/ית היום', min: 1, max: 5, minLabel: 'בכלל לא מסכים', maxLabel: 'לגמרי מסכים' },
+    { id: 9, text: 'עד כמה אתה מסכים עם ההיגד הבא: הפרופיל שלי מכיל פרטים ספציפיים עליי (ולא רק "אוהב לטייל ולצחוק") שיכולים לגרום למישהו/י ספציפי/ת להתחבר אליי', min: 1, max: 5, minLabel: 'בכלל לא מסכים', maxLabel: 'לגמרי מסכים' },
+    { id: 10, text: 'עד כמה אתה מסכים עם ההיגד הבא: אני בטוח/ה שאין בפרופיל שלי ניסוחים שעלולים להרתיע - תלונות, אזכור של אקסים, טון שלילי או נזקק', min: 1, max: 5, minLabel: 'בכלל לא מסכים', maxLabel: 'לגמרי מסכים' },
+    { id: 11, text: 'עד כמה אתה מסכים עם ההיגד הבא: כבר הראיתי את הפרופיל שלי בפועל לחבר/ה או מכר/ה וקיבלתי מהם משוב אמיתי עליו', min: 1, max: 5, minLabel: 'בכלל לא מסכים', maxLabel: 'לגמרי מסכים' },
+    { id: 12, text: 'עד כמה אתה מסכים עם ההיגד הבא: עדכנתי את הביו/הפרומפטים שלי בחצי השנה האחרונה כך שהם משקפים איפה שאני נמצא/ת בחיים עכשיו', min: 1, max: 5, minLabel: 'בכלל לא מסכים', maxLabel: 'לגמרי מסכים' },
+  ];
+
+  /* ═══ STATE ═══ */
+  let state = { screen:'intro', currentQ:0, answers:{} };
+
+  /* ═══ SCORING ═══ */
+  function calcAverage() {
+    let sum = 0, count = 0;
+    for (let i = 1; i < QUESTIONS.length; i++) {
+      if (state.answers[i] !== undefined) { sum += state.answers[i]; count++; }
+    }
+    return count ? sum / count : 0;
+  }
+
+  /* ═══ PROGRESS ═══ */
+  function updateProgress() {
+    document.getElementById('progressFill').style.width = (state.currentQ/QUESTIONS.length*100)+'%';
+    document.getElementById('currentQ').textContent = state.currentQ+1;
+    const b = document.getElementById('topBackBtn');
+    state.currentQ > 0 ? b.classList.remove('hidden') : b.classList.add('hidden');
+  }
+  function showProgress(show) {
+    const el = document.getElementById('progressContainer');
+    const app = document.getElementById('app');
+    if (show) { el.classList.remove('hidden'); app.style.paddingTop='70px'; }
+    else       { el.classList.add('hidden');    app.style.paddingTop=''; }
+  }
+
+  /* ═══ ROUTER ═══ */
+  function render() {
+    const app = document.getElementById('app');
+    switch (state.screen) {
+      case 'intro':    app.innerHTML=renderIntro();    showProgress(false); break;
+      case 'quiz':     app.innerHTML=renderQuiz();     showProgress(true);  updateProgress(); break;
+      case 'loading':  app.innerHTML=renderLoading();  showProgress(false); break;
+      case 'summary':  app.innerHTML=renderSummary();  showProgress(false); break;
+    }
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  /* ═══ INTRO ═══ */
+  function renderIntro() {
+    return `
+    <div class="screen w-full max-w-xl mx-auto text-center py-14 px-4">
+
+      <!-- Brand logo -->
+      <img decoding="async" src="${LOGO_SRC}" alt="ליאור רוכמן אימון מנטלי" class="mx-auto mb-8 select-none" style="height:38px;width:auto" draggable="false" />
+
+      <!-- Icon -->
+      <div class="relative mb-10 inline-block">
+        <div class="absolute inset-0 blur-3xl rounded-full scale-150"
+             style="background:rgba(227,176,35,0.14)"></div>
+        <div class="relative icon-wrap w-24 h-24 rounded-3xl flex items-center justify-center animate-float mx-auto">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="cg" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#ffde59"/>
+                <stop offset="1" stop-color="#a67c00"/>
+              </linearGradient>
+            </defs>
+            <path d="M3 17v-2a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" stroke="url(#cg)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 17v-5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v5" stroke="url(#cg)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M15 17V8a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v9" stroke="url(#cg)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 19h20" stroke="url(#cg)" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <h1 class="text-3xl sm:text-[2.35rem] font-black leading-tight mb-3" style="color:#1a1612">
+        הערכת <span class="gradient-text">פרופיל ההיכרויות</span> שלי
+      </h1>
+      <p class="text-lg sm:text-xl font-semibold leading-snug mb-8 text-body">
+        כמה אתה בטוח בפרופיל שלך היום -<br class="hidden sm:block" /> ולאן תוכל להגיע משם?
+      </p>
+
+      <!-- Value prop card -->
+      <div class="card p-6 mb-8 text-right">
+        <p class="text-base leading-relaxed mb-5 text-body">
+          12 שאלות קצרות שיעזרו לך לקבל <strong style="color:#1a1612">תמונת מצב מספרית וברורה</strong>
+          על הפרופיל שלך היום - כדי שתוכל <strong style="color:#1a1612">להשוות ולראות התקדמות</strong> בהמשך.
+        </p>
+        <div class="flex flex-col gap-2.5">
+          ${[['דירוג רמת הביטחון האישי שלך'],['הערכת איכות הפרופיל שלך'],['ממוצע מספרי שאפשר להשוות אליו בעתיד']].map(([txt])=>`
+          <div class="flex items-center gap-3">
+            <span class="flex-shrink-0 w-1.5 h-1.5 rounded-full" style="background:#e3b023;margin-top:2px"></span>
+            <span class="text-sm font-medium text-body">${txt}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <button class="cta-btn w-full sm:w-auto" onclick="startQuiz()">
+        להתחלת ההערכה
+        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+             style="display:inline-block;margin-right:8px;transform:scaleX(-1);vertical-align:middle">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </div>`;
+  }
+
+  /* ═══ QUIZ ═══ */
+  function renderQuiz() {
+    const q = QUESTIONS[state.currentQ];
+    const cur = state.answers[state.currentQ];
+    const rem = QUESTIONS.length - state.currentQ - 1;
+    const nums = [];
+    for (let n = q.min; n <= q.max; n++) nums.push(n);
+
+    return `
+    <div class="screen w-full max-w-lg mx-auto px-2 py-4">
+      <div class="flex items-center justify-between mb-5 mt-1">
+        <span class="text-xs font-medium text-muted">
+          ${rem > 0 ? rem+' שאלות נותרו' : 'שאלה אחרונה!'}
+        </span>
+        <span class="text-sm font-bold rounded-full px-3.5 py-1"
+              style="color:#a67c00;background:rgba(227,176,35,0.12);border:1px solid rgba(227,176,35,0.28)">
+          ${state.currentQ+1} / ${QUESTIONS.length}
+        </span>
+      </div>
+
+      <h2 class="text-xl sm:text-2xl font-bold leading-snug text-right mb-8" style="color:#1a1612">
+        ${escHtml(q.text)}
+      </h2>
+
+      <div class="grid gap-2.5 mb-3" style="grid-template-columns:repeat(${Math.min(nums.length,5)},1fr)">
+        ${nums.map(n => `
+        <div class="scale-btn mx-auto${cur===n?' selected':''}" onclick="selectScale(${n})">${n}</div>
+        `).join('')}
+      </div>
+      <div class="flex items-center justify-between text-xs text-muted px-1">
+        <span>${q.min} - ${escHtml(q.minLabel)}</span>
+        <span>${q.max} - ${escHtml(q.maxLabel)}</span>
+      </div>
+    </div>`;
+  }
+
+  /* ═══ LOADING ═══ */
+  function renderLoading() {
+    return `
+    <div class="screen w-full max-w-sm mx-auto text-center px-4 py-20">
+      <div class="relative inline-flex items-center justify-center w-20 h-20 mb-7">
+        <div class="absolute inset-0 rounded-full" style="border:2px solid rgba(227,176,35,0.18)"></div>
+        <div class="absolute inset-0 rounded-full animate-spin-slow"
+             style="border:2px solid transparent;border-top-color:#e3b023"></div>
+        <svg width="30" height="30" viewBox="0 0 46 46" fill="none">
+          <path d="M23 2 L26.5 20 L23 17 L19.5 20 Z" fill="#e3b023"/>
+          <path d="M23 44 L26.5 26 L23 29 L19.5 26 Z" fill="#e3b023" opacity="0.5"/>
+          <path d="M44 23 L26 26.5 L29 23 L26 19.5 Z" fill="#e3b023" opacity="0.7"/>
+          <path d="M2 23 L20 26.5 L17 23 L20 19.5 Z" fill="#e3b023" opacity="0.5"/>
+          <circle cx="23" cy="23" r="4" fill="#e3b023"/>
+          <circle cx="23" cy="23" r="2" fill="white"/>
+        </svg>
+      </div>
+      <p class="text-base font-semibold mb-3" style="color:#1a1612">מחשב את הממוצע שלך…</p>
+      <div class="flex justify-center gap-2">
+        <div class="dot w-2 h-2 rounded-full" style="background:#e3b023"></div>
+        <div class="dot w-2 h-2 rounded-full" style="background:#e3b023"></div>
+        <div class="dot w-2 h-2 rounded-full" style="background:#e3b023"></div>
+      </div>
+    </div>`;
+  }
+
+  /* ═══ SUMMARY ═══ */
+  function renderSummary() {
+    const avg = calcAverage();
+    const q1 = state.answers[0];
+
+    const rows = QUESTIONS.slice(1).map((q, idx) => {
+      const val = state.answers[idx+1];
+      return `
+      <div class="flex items-center justify-between gap-4 py-3${idx>0?' border-t':''}" style="border-color:#e8e2d8">
+        <span class="text-sm font-medium text-body flex-1 text-right leading-snug">${escHtml(q.text)}</span>
+        <span class="flex-shrink-0 text-sm font-bold rounded-full px-3 py-1"
+              style="color:#a67c00;background:rgba(227,176,35,0.12);border:1px solid rgba(227,176,35,0.28)">${val} / 5</span>
+      </div>`;
+    }).join('');
+
+    return `
+    <div class="screen w-full max-w-lg mx-auto px-2 py-14 text-center">
+
+      <div class="mb-6 animate-float inline-flex items-center justify-center w-20 h-20 rounded-3xl icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none"
+             stroke="#a67c00" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+      </div>
+
+      <h1 class="text-2xl sm:text-3xl font-black mb-3" style="color:#1a1612">הסיכום שלך מוכן!</h1>
+      <p class="text-base leading-relaxed mb-8 text-body">
+        כך דירגת את עצמך ואת הפרופיל שלך הפעם.
+      </p>
+
+      <div class="card p-6 mb-5 text-center">
+        <div class="text-xs font-semibold text-muted mb-2">רמת הביטחון שלך בפרופיל</div>
+        <div class="text-4xl font-black" style="color:#1a1612">${q1}<span class="text-lg font-bold text-muted"> / 10</span></div>
+      </div>
+
+      <div class="card p-6 mb-5 text-right">
+        <div class="text-xs font-semibold text-muted mb-1 text-center">כל התשובות שלך</div>
+        ${rows}
+      </div>
+
+      <div class="card p-6 mb-8 text-center" style="background:linear-gradient(135deg,#fdf6e0 0%,#fffaf0 100%)">
+        <div class="text-xs font-semibold text-muted mb-2">ממוצע דירוג הפרופיל שלך</div>
+        <div class="text-4xl font-black" style="color:#1a1612">${avg.toFixed(1)}<span class="text-lg font-bold text-muted"> / 5</span></div>
+      </div>
+
+      <p class="text-xs text-muted mb-10">טיפ: שמור צילום מסך של העמוד הזה, כדי להשוות את הדירוג שלך בסוף הקורס.</p>
+
+      <img decoding="async" src="${LOGO_SRC}" alt="ליאור רוכמן אימון מנטלי" class="mx-auto select-none opacity-80" style="height:26px;width:auto" draggable="false" />
+    </div>`;
+  }
+
+  /* ═══ ACTIONS ═══ */
+  function startQuiz() { state.screen='quiz'; state.currentQ=0; render(); }
+
+  let _t=null;
+  function selectScale(val) {
+    clearTimeout(_t);
+    state.answers[state.currentQ] = val;
+    render();
+    _t = setTimeout(nextQuestion, 420);
+  }
+
+  function nextQuestion() {
+    if (state.answers[state.currentQ]===undefined) return;
+    if (state.currentQ < QUESTIONS.length-1) {
+      state.currentQ++;
+      render();
+    } else {
+      state.screen='loading';
+      render();
+      setTimeout(() => { state.screen='summary'; render(); }, 1300);
+    }
+  }
+
+  function goBack() {
+    if (state.currentQ>0) state.currentQ--; else state.screen='intro';
+    render();
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  render();
+  </script>
+
+</body>
+</html>
